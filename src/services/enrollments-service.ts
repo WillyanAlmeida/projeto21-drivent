@@ -1,37 +1,33 @@
 import { Address, Enrollment } from '@prisma/client';
 import { request } from '@/utils/request';
-import { invalidDataError, notFoundError } from '@/errors';
+import { enrollmentNotFoundError, invalidCepError } from '@/errors';
 import { addressRepository, CreateAddressParams, enrollmentRepository, CreateEnrollmentParams } from '@/repositories';
 import { exclude } from '@/utils/prisma-utils';
+import { AddressEnrollment } from '@/protocols';
 
+async function getAddressFromCEP(cep: string): Promise<AddressEnrollment> {
+  const result = await request.get(`${process.env.VIA_CEP_API}/${cep}/json/`);
 
+  if (!result.data || result.data.erro) {
+    throw invalidCepError();
+  }
 
-async function validZipCOde(zipcode: string) {
-  const validaCep = /^\d{5}-?\d{3}$/;
-  if (!validaCep.test(zipcode)) throw invalidDataError('Invalid format');
-
-  const result = await request.get(`${process.env.VIA_CEP_API}/${zipcode}/json/`);
-  if (result.data.erro) throw invalidDataError(` ${zipcode}` + 'Is invalid zip code');
-  return result.data;
-}
-
-async function getAddressFromCEP(zipcode: string) {
-  const result = await validZipCOde(zipcode);
-  const { logradouro, complemento, bairro, localidade, uf } = result;
-  const addressByZipCode = {
-    logradouro,
-    complemento,
+  const { bairro, localidade, uf, complemento, logradouro } = result.data;
+  const address: AddressEnrollment = {
     bairro,
     cidade: localidade,
     uf,
+    complemento,
+    logradouro,
   };
-  return addressByZipCode;
+
+  return address;
 }
 
 async function getOneWithAddressByUserId(userId: number): Promise<GetOneWithAddressByUserIdResult> {
   const enrollmentWithAddress = await enrollmentRepository.findWithAddressByUserId(userId);
 
-  if (!enrollmentWithAddress) throw invalidDataError("");
+  if (!enrollmentWithAddress) throw enrollmentNotFoundError();
 
   const [firstAddress] = enrollmentWithAddress.Address;
   const address = getFirstAddress(firstAddress);
@@ -57,7 +53,7 @@ async function createOrUpdateEnrollmentWithAddress(params: CreateOrUpdateEnrollm
   enrollment.birthday = new Date(enrollment.birthday);
   const address = getAddressForUpsert(params.address);
 
-  await validZipCOde(address.cep);
+  await getAddressFromCEP(address.cep);
 
   const newEnrollment = await enrollmentRepository.upsert(params.userId, enrollment, exclude(enrollment, 'userId'));
 
