@@ -9,7 +9,7 @@ ticketsRouter.all('/*', authenticateToken);
 
 ticketsRouter.get('/types', getTicketsType)
 ticketsRouter.get('/', getTickets )
-//ticketsRouter.post('/', TicketPosts)
+ticketsRouter.post('/', TicketPosts)
 
 
 

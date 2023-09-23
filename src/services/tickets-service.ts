@@ -1,8 +1,6 @@
-import { notFoundError } from "@/errors";
+import { invalidDataError, notFoundError } from "@/errors";
 import { enrollmentRepository } from "@/repositories";
 import { TicketsRepository } from "@/repositories/tickets-repository";
-
-
 
 
 async function getTicketsByUser(userId: number) {
@@ -20,6 +18,14 @@ async function getTicketsByUser(userId: number) {
   }
   
   async function postTicket(userId: number, ticketTypeId: number) {
-  }
+    if(!ticketTypeId)throw invalidDataError ("ticketTypeId não foi enviado")
+    if(!userId)throw notFoundError()
+    const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+    if (!enrollment) throw notFoundError()
+    const ticket = TicketsRepository.getTicketTypeById(ticketTypeId);
+    if (!ticket) throw notFoundError();
+
+    return await TicketsRepository.newTicket(ticketTypeId, enrollment.id)}
+
   
   export const ticketsServices = { getTicketsByUser, getTicketsTypes, postTicket };

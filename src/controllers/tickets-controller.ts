@@ -15,12 +15,10 @@ export async function getTickets(req: AuthenticatedRequest, res: Response) {
  return res.status(httpStatus.OK).send(result)
 }
 
-export async function TicketPosts(req: Request, res: Response) {
-   // const { email, password } = req.body;
+export async function TicketPosts(req: AuthenticatedRequest, res: Response) {
+    const userId = req.userId;
+    const { ticketTypeId } = req.body as {ticketTypeId: number};
+    const create = await ticketsServices.postTicket(userId, ticketTypeId)
   
-    
-  
-    return res.status(httpStatus.CREATED).json({
-     
-    });
+    return res.status(httpStatus.CREATED).send(create);
   }
