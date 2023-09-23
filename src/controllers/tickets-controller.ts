@@ -4,14 +4,14 @@ import { AuthenticatedRequest } from '@/middlewares';
 import httpStatus from 'http-status';
 
 
-export async function getTicketsType(req: Request, res: Response) {
- 
+export async function getTicketsType(_req: AuthenticatedRequest, res: Response) {
+    const result = await ticketsServices.getTicketsTypes()
+    res.status(httpStatus.OK).send(result) 
 }
 
 export async function getTickets(req: AuthenticatedRequest, res: Response) {
     const userId = req.userId;
  const result = await ticketsServices.getTicketsByUser(userId)
- console.log(result)
  return res.status(httpStatus.OK).send(result)
 }
 

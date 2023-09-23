@@ -16,6 +16,7 @@ async function getTicketsByUser(userId: number) {
   }
   
   async function getTicketsTypes() {
+    return await TicketsRepository.findTicketsType()
   }
   
   async function postTicket(userId: number, ticketTypeId: number) {

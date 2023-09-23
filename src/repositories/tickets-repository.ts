@@ -9,9 +9,8 @@ async function findById(userId: number) {
 }
 
 async function findTicketsType() {
-    //   return prisma.user.create({
-    //     data,
-    //   });
+    return await prisma.ticketType.findMany()
+  
 }
 
 async function newTicket() {
