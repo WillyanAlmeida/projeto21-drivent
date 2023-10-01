@@ -11,10 +11,12 @@ async function allHotels() {
 }
 
 async function hotelById(hotelId: number) {
-    const userRooms = await prisma.room.findMany({
-        where:{hotelId}
+    
+    const Rooms = await prisma.hotel.findUnique({
+        where:{id: hotelId},
+        include: { Rooms: true }
     })
-    return userRooms;
+    return Rooms;
   }
 
 export const hotelsRepository = {

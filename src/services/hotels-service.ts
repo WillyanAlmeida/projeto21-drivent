@@ -13,21 +13,29 @@ async function getHotels(userId: number) {
 
     const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id)
     if (!ticket) throw notFoundError();
-    if (ticket.status==TicketStatus.RESERVED) throw paymentRequired('not paid');
+    if (ticket.status == TicketStatus.RESERVED) throw paymentRequired('not paid');
     if (ticket.TicketType.isRemote) throw paymentRequired('is remote');
     if (!ticket.TicketType.includesHotel) throw paymentRequired('not includ hotel');
     const hotels = await hotelsRepository.allHotels();
     if (!hotels || hotels.length === 0) throw notFoundError();
     return hotels
-    }
+}
 
 
-async function getHotelById(hotelId: number) {
-    const event = await hotelsRepository.hotelById(hotelId);
-    if (!event) return false;
+async function getHotelById(userId: number, hotelId: number) {
+    const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+    if (!enrollment) throw notFoundError();
 
+    const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id)
+    if (!ticket) throw notFoundError();
+    if (ticket.status == TicketStatus.RESERVED) throw paymentRequired('not paid');
+    if (ticket.TicketType.isRemote) throw paymentRequired('is remote');
+    if (!ticket.TicketType.includesHotel) throw paymentRequired('not includ hotel');
+    const hotels = await hotelsRepository.allHotels();
+    if (!hotels || hotels.length === 0) throw notFoundError();
 
-    return ('ok')
+    const Rooms = await hotelsRepository.hotelById(hotelId);
+    return Rooms;
 }
 
 export const hotelsService = {
