@@ -6,9 +6,8 @@ import { prisma } from '@/config';
 
 async function allHotels() {
 
-    const result = await prisma.hotel.findMany();
-    console.log(result)
-    return result
+    return await prisma.hotel.findMany();
+   
 }
 
 async function hotelById(hotelId: number) {

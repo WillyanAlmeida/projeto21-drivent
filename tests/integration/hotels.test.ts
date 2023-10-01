@@ -7,6 +7,7 @@ import {
     createEnrollmentWithAddress, createUser, createTicketType, createTicket,
     createPayment,
     generateCreditCardData,
+    createHotel,
 } from '../factories';
 import { cleanDb, generateValidToken } from '../helpers';
 import { prisma } from '@/config';
@@ -65,7 +66,7 @@ describe('GET /hotels/', () => {
             expect(response.status).toEqual(httpStatus.NOT_FOUND);
         });
 
-        it('should respond with status 404 When  ticket without status PAID ', async () => {
+        it('should respond with status 404 When ticket without status PAID ', async () => {
             const user = await createUser();
             const token = await generateValidToken(user);
             const enrollment = await createEnrollmentWithAddress(user);
@@ -75,8 +76,63 @@ describe('GET /hotels/', () => {
             
            
            const result = await server.get('/hotels').set('Authorization', `Bearer ${token}`)
-            console.log(result.body)
             expect(result.status).toBe(httpStatus.PAYMENT_REQUIRED);
+            
+        });
+
+        it('should respond with status 402 when TicketType isRemote ', async () => {
+            const user = await createUser();
+            const token = await generateValidToken(user);
+            const enrollment = await createEnrollmentWithAddress(user);
+            const ticketType = await createTicketType(true, true);
+            await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID); 
+
+            const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);       
+            expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
+          });
+      
+          it('should respond with status 402 when includesHotel is false', async () => {
+            const user = await createUser();
+            const token = await generateValidToken(user);
+            const enrollment = await createEnrollmentWithAddress(user);
+            const ticketType = await createTicketType(false, false);
+            await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+      
+            const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);      
+            expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
+          });
+
+        it('should respond with status 404 When  ticket without status PAID ', async () => {
+            const user = await createUser();
+            const token = await generateValidToken(user);
+            const enrollment = await createEnrollmentWithAddress(user);
+            const ticketType = await createTicketType();
+            const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);            
+           
+           const result = await server.get('/hotels').set('Authorization', `Bearer ${token}`)
+            expect(result.status).toBe(httpStatus.PAYMENT_REQUIRED);
+            
+        });
+
+        it('should respond with status 200 When create hotel and return data ', async () => {
+            const user = await createUser();
+            const token = await generateValidToken(user);
+            const enrollment = await createEnrollmentWithAddress(user);
+            const ticketType = await createTicketType(false, true);
+            const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID); 
+            const hotel = await createHotel();           
+           
+           const result = await server.get('/hotels').set('Authorization', `Bearer ${token}`)
+            expect(result.status).toBe(httpStatus.OK);
+            expect(result.body).toEqual([
+                {
+                  id: hotel.id,
+                  name: hotel.name,
+                  image: hotel.image,
+                  createdAt: hotel.createdAt.toISOString(),
+                  updatedAt: hotel.updatedAt.toISOString(),
+                },
+              ])
             
         });
 
@@ -84,4 +140,15 @@ describe('GET /hotels/', () => {
 
 
 });
+
+describe('GET /hotels/:hotelId', () => {
+
+
+
+
+
+
+
+
+})
 

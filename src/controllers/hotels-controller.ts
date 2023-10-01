@@ -7,7 +7,6 @@ import httpStatus from 'http-status';
 export const getHotels = async(req: AuthenticatedRequest, res: Response)=>{
     const { userId } = req;
     const hotels = await hotelsService.getHotels(userId);
-    console.log(hotels)
     res.status(httpStatus.OK).send(hotels); 
 }
 
