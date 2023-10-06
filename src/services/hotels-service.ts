@@ -1,44 +1,43 @@
-import { Event, TicketStatus } from '@prisma/client';
-import dayjs from 'dayjs';
-import { notFoundError } from '@/errors';
-import { exclude } from '@/utils/prisma-utils';
-import { hotelsRepository } from '@/repositories/hotels-repository';
-import { enrollmentRepository, ticketsRepository } from '@/repositories';
-import { PAYMENT_REQUIRED } from 'http-status';
-import { paymentRequired } from '@/errors/payment-required-error';
+import { TicketStatus } from '@prisma/client';
+import { invalidDataError, notFoundError } from '@/errors';
+import { cannotListHotelsError } from '@/errors/cannot-list-hotels-error';
+import { enrollmentRepository, hotelRepository, ticketsRepository } from '@/repositories';
 
-async function getHotels(userId: number) {
-    const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-    if (!enrollment) throw notFoundError();
+async function validateUserBooking(userId: number) {
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) throw notFoundError();
 
-    const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id)
-    if (!ticket) throw notFoundError();
-    if (ticket.status == TicketStatus.RESERVED) throw paymentRequired('not paid');
-    if (ticket.TicketType.isRemote) throw paymentRequired('is remote');
-    if (!ticket.TicketType.includesHotel) throw paymentRequired('not includ hotel');
-    const hotels = await hotelsRepository.allHotels();
-    if (!hotels || hotels.length === 0) throw notFoundError();
-    return hotels
+  const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id);
+  if (!ticket) throw notFoundError();
+
+  const type = ticket.TicketType;
+
+  if (ticket.status === TicketStatus.RESERVED || type.isRemote || !type.includesHotel) {
+    throw cannotListHotelsError();
+  }
 }
 
+async function getHotels(userId: number) {
+  await validateUserBooking(userId);
 
-async function getHotelById(userId: number, hotelId: number) {
-    const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-    if (!enrollment) throw notFoundError();
+  const hotels = await hotelRepository.findHotels();
+  if (hotels.length === 0) throw notFoundError();
 
-    const ticket = await ticketsRepository.findTicketByEnrollmentId(enrollment.id)
-    if (!ticket) throw notFoundError();
-    if (ticket.status == TicketStatus.RESERVED) throw paymentRequired('not paid');
-    if (ticket.TicketType.isRemote) throw paymentRequired('is remote');
-    if (!ticket.TicketType.includesHotel) throw paymentRequired('not includ hotel');
-    const hotels = await hotelsRepository.allHotels();
-    if (!hotels || hotels.length === 0) throw notFoundError();
+  return hotels;
+}
 
-    const Rooms = await hotelsRepository.hotelById(hotelId);
-    return Rooms;
+async function getHotelsWithRooms(userId: number, hotelId: number) {
+  await validateUserBooking(userId);
+
+  if (!hotelId || isNaN(hotelId)) throw invalidDataError('hotelId');
+
+  const hotelWithRooms = await hotelRepository.findRoomsByHotelId(hotelId);
+  if (!hotelWithRooms) throw notFoundError();
+
+  return hotelWithRooms;
 }
 
 export const hotelsService = {
-    getHotels,
-    getHotelById,
+  getHotels,
+  getHotelsWithRooms,
 };
