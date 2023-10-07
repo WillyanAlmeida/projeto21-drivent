@@ -40,4 +40,5 @@ async function getHotelsWithRooms(userId: number, hotelId: number) {
 export const hotelsService = {
   getHotels,
   getHotelsWithRooms,
+  validateUserBooking,
 };

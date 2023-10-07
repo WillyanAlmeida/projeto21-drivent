@@ -1,10 +1,12 @@
 import { Router } from 'express';
-import { getDefaultEvent } from '@/controllers';
+import { alterBooking, getBooking, postBooking } from '@/controllers';
+import { authenticateToken } from '@/middlewares';
 
 const bookingsRouter = Router();
-
+bookingsRouter
+.all('/*', authenticateToken)
 //bookingsRouter.get('/', getBooking);
-bookingsRouter.post('/', postBooking;
-//bookingsRouter.put('/:bookingId', alterbooking);
+.post('/', postBooking);
+//bookingsRouter.put('/:bookingId', alterBooking);
 
 export { bookingsRouter };

@@ -54,6 +54,10 @@ export function handleApplicationErrors(
     return res.sendStatus(httpStatus.BAD_REQUEST);
   }
 
+  if (err.name === 'BookingForbiddenError') {
+    return res.sendStatus(httpStatus.FORBIDDEN);
+  }
+
   if (err.name === 'InvalidCEPError') {
     return res.status(httpStatus.BAD_REQUEST).send(err.message);
   }
