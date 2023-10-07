@@ -1,6 +1,6 @@
 import { Event } from '@prisma/client';
 import dayjs from 'dayjs';
-import { BookingForbiddenError, invalidDataError, notFoundError } from '@/errors';
+import { bookingForbiddenError, invalidDataError, notFoundError } from '@/errors';
 import { eventRepository } from '@/repositories';
 import { exclude } from '@/utils/prisma-utils';
 import { hotelsService } from './hotels-service';
@@ -25,7 +25,7 @@ async function postBooking(roomId: number, userId: number) {
 
     const room = await bookingsRepository.findRoomById(roomId)
     if (!room) throw notFoundError();
-    if((bookRoom.length-room.capacity)==0) throw BookingForbiddenError() 
+    if((bookRoom.length-room.capacity)==0) throw bookingForbiddenError() 
 
     const createdBook = await bookingsRepository.createBooking(roomId, userId)
     return createdBook

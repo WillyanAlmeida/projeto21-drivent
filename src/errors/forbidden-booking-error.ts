@@ -1,8 +1,8 @@
 import { ApplicationError } from '@/protocols';
 
-export function BookingForbiddenError(): ApplicationError {
+export function bookingForbiddenError(): ApplicationError {
   return {
-    name: 'BookingForbiddenError',
+    name: 'bookingForbiddenError',
     message: 'It is not possible to make a reservation, room is full',
   };
 }
