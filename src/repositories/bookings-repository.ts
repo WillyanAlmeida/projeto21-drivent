@@ -16,45 +16,42 @@ async function findBookingWithRoomId(roomId: number) {
 
     return result;
 }
+async function findBookingWithRoomIdByUser(userId: number) {
+    const result = await prisma.booking.findMany({
+        where: { userId: userId }
+    });
 
-async function createBooking(roomId: number, userId: number) {
+    return result;
+}
+
+async function upsertBooking(roomId: number, userId: number) {
      const booking = {
          roomId,
          userId
      }
-     const result = await prisma.booking.create({
-         data: booking,
-         //include: { User: true }
+     const result = await prisma.booking.upsert({
+        where: {
+            id: userId,
+          },
+          update: {
+            roomId: roomId
+                      },
+          create: booking
+        
+        
      });
 
      return result;
 }
 
-async function findTicketById(ticketId: number) {
-    const result = await prisma.ticket.findUnique({
-        where: { id: ticketId },
-        include: { TicketType: true },
-    });
 
-    return result;
-}
 
-async function ticketProcessPayment(ticketId: number) {
-    const result = prisma.ticket.update({
-        where: {
-            id: ticketId,
-        },
-        data: {
-            status: TicketStatus.PAID,
-        },
-    });
 
-    return result;
-}
 
 export const bookingsRepository = {
     findRoomById,
     findBookingWithRoomId,
-    createBooking
+    upsertBooking,
+    findBookingWithRoomIdByUser
 
 };
