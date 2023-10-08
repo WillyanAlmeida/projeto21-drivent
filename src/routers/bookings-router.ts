@@ -5,8 +5,8 @@ import { authenticateToken } from '@/middlewares';
 const bookingsRouter = Router();
 bookingsRouter
 .all('/*', authenticateToken)
-//bookingsRouter.get('/', getBooking);
-.post('/', postBooking);
-bookingsRouter.put('/:bookingId', alterBooking);
+.get('/', getBooking)
+.post('/', postBooking)
+.put('/:bookingId', alterBooking);
 
 export { bookingsRouter };

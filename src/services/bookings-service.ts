@@ -4,6 +4,7 @@ import { bookingForbiddenError, invalidDataError, notFoundError } from '@/errors
 import { enrollmentRepository, ticketsRepository, bookingsRepository } from '@/repositories';
 import { exclude } from '@/utils/prisma-utils';
 import { threadId } from 'worker_threads';
+import { hotelsService } from './hotels-service';
 
 async function validateUserBooking(userId: number) {
     const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
@@ -19,19 +20,19 @@ async function validateUserBooking(userId: number) {
     }
   }
 
-async function getBooking() {
-    //const booking = await bookingRepository.findFirst();
-    //if (!evebookingnt) throw notFoundError();
-
-    //return exclude(event, 'createdAt', 'updatedAt');
+async function getBooking(userId: number) {
+    if(!userId) throw notFoundError();
+    await hotelsService.validateUserBooking(userId)
+    const booking = await bookingsRepository.findBookingWithRoomIdByUser(userId);
+    if (!booking) throw notFoundError();
+    const room = await bookingsRepository.findRoomById(booking[0].roomId)
+    return ({id: booking[0].id, room: room})
 }
 
-//export type GetFirstEventResult = Omit<Event, 'createdAt' | 'updatedAt'>;
 
 async function postBooking(roomId: number, userId: number) {
 
     if (!roomId || isNaN(roomId) || roomId == undefined) throw invalidDataError('roomId');
-    console.log('postbooking')
     await validateUserBooking(userId);
 
     const bookRoom = await bookingsRepository.findBookingWithRoomId(roomId)
