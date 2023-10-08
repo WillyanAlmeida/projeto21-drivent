@@ -54,7 +54,7 @@ export function handleApplicationErrors(
     return res.sendStatus(httpStatus.BAD_REQUEST);
   }
 
-  if (err.name === 'BookingForbiddenError') {
+  if (err.name === 'bookingForbiddenError') {
     return res.sendStatus(httpStatus.FORBIDDEN);
   }
 

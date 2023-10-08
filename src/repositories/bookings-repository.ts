@@ -2,10 +2,12 @@ import { TicketStatus } from '@prisma/client';
 import { prisma } from '@/config';
 
 async function findRoomById(roomId: number) {
+    console.log('findroombyId')
     const result = await prisma.room.findUnique({
         where: { id: roomId },
         // include: { TicketType: true },
     });
+    console.log(result)
     return result;
 }
 
@@ -25,23 +27,23 @@ async function findBookingWithRoomIdByUser(userId: number) {
 }
 
 async function upsertBooking(roomId: number, userId: number) {
-     const booking = {
-         roomId,
-         userId
-     }
-     const result = await prisma.booking.upsert({
+    console.log('upsert')
+    const booking = {
+        roomId,
+        userId
+    }
+    const result = await prisma.booking.upsert({
         where: {
             id: userId,
-          },
-          update: {
+        },
+        update: {
             roomId: roomId
-                      },
-          create: booking
-        
-        
-     });
+        },
+        create: booking
 
-     return result;
+    });
+    console.log(result)
+    return result;
 }
 
 

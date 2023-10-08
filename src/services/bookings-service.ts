@@ -1,11 +1,23 @@
-import { Event } from '@prisma/client';
+import { Event, TicketStatus } from '@prisma/client';
 import dayjs from 'dayjs';
 import { bookingForbiddenError, invalidDataError, notFoundError } from '@/errors';
-import { eventRepository } from '@/repositories';
+import { enrollmentRepository, ticketsRepository, bookingsRepository } from '@/repositories';
 import { exclude } from '@/utils/prisma-utils';
-import { hotelsService } from './hotels-service';
-import { bookingsRepository } from '@/repositories/bookings-repository';
 import { threadId } from 'worker_threads';
+
+async function validateUserBooking(userId: number) {
+    const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+    if (!enrollment) throw bookingForbiddenError();
+  
+    const ticket = await ticketsRepository .findTicketByEnrollmentId(enrollment.id);
+    if (!ticket) throw bookingForbiddenError();
+  
+    const type = ticket.TicketType;
+  
+    if (ticket.status === TicketStatus.RESERVED || type.isRemote || !type.includesHotel) {
+      throw bookingForbiddenError();
+    }
+  }
 
 async function getBooking() {
     //const booking = await bookingRepository.findFirst();
@@ -17,25 +29,25 @@ async function getBooking() {
 //export type GetFirstEventResult = Omit<Event, 'createdAt' | 'updatedAt'>;
 
 async function postBooking(roomId: number, userId: number) {
-    if (!roomId || isNaN(roomId) || roomId == undefined) throw invalidDataError('roomId');
 
-    await hotelsService.validateUserBooking(userId);
+    if (!roomId || isNaN(roomId) || roomId == undefined) throw invalidDataError('roomId');
+    console.log('postbooking')
+    await validateUserBooking(userId);
 
     const bookRoom = await bookingsRepository.findBookingWithRoomId(roomId)
-
     const room = await bookingsRepository.findRoomById(roomId)
     if (!room) throw notFoundError();
     if((bookRoom.length-room.capacity)==0) throw bookingForbiddenError() 
 
     const createdBook = await bookingsRepository.upsertBooking(roomId, userId)
+
     return createdBook
 
 }
 
 async function alterBooking(roomId: number, userId: number) {
     if (!roomId || isNaN(roomId) || roomId == undefined) throw invalidDataError('roomId');
-
-    await hotelsService.validateUserBooking(userId);
+    await validateUserBooking(userId);
 
     const roomByuser = await bookingsRepository.findBookingWithRoomIdByUser(userId)
     if(!roomByuser ) throw bookingForbiddenError();
