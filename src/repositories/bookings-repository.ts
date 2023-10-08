@@ -30,6 +30,7 @@ async function upsertBooking(roomId: number, userId: number) {
         roomId,
         userId
     }
+    console.log(booking)
     const result = await prisma.booking.upsert({
         where: {
             id: userId,
@@ -40,6 +41,7 @@ async function upsertBooking(roomId: number, userId: number) {
         create: booking
 
     });
+    console.log(result)
     return result;
 }
 

@@ -21,9 +21,10 @@ export async function postBooking(req: AuthenticatedRequest, res: Response) {
 
 export async function alterBooking(req: AuthenticatedRequest, res: Response) {
     const { userId } = req;
-    const  roomId  = Number(req.params.roomId );
+    const  roomId  = Number(req.body.roomId );
 
     const alterbooking = await bookingsService.alterBooking(roomId, userId);
-    res.status(httpStatus.OK).send(alterbooking);
+    console.log(alterbooking)
+    res.status(httpStatus.OK).send({bookingId: alterbooking.id });
 }
 
