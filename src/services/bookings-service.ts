@@ -1,8 +1,6 @@
-import { Event, TicketStatus } from '@prisma/client';
-import dayjs from 'dayjs';
+import { TicketStatus } from '@prisma/client';
 import { bookingForbiddenError, invalidDataError, notFoundError } from '@/errors';
 import { enrollmentRepository, ticketsRepository, bookingsRepository } from '@/repositories';
-import { exclude } from '@/utils/prisma-utils';
 import { threadId } from 'worker_threads';
 import { hotelsService } from './hotels-service';
 
@@ -22,10 +20,11 @@ async function validateUserBooking(userId: number) {
     console.log('valida u ticket stus paid')
   }
 
-async function getBooking(userId: number) {
+export async function getBooking(userId: number) {
     if(!userId) throw notFoundError();
     await hotelsService.validateUserBooking(userId)
     const booking = await bookingsRepository.findBookingWithRoomIdByUser(userId);
+    if(booking.length==0)throw notFoundError();
     if (!booking) throw notFoundError();
     const room = await bookingsRepository.findRoomById(booking[0].roomId)
     return ({id: booking[0].id, room: room})

@@ -7,6 +7,7 @@ export async function getBooking(req: AuthenticatedRequest, res: Response) {
     const { userId } = req;
 
     const bookings = await bookingsService.getBooking(userId);
+    
     res.status(httpStatus.OK).send(bookings);
 }
 
@@ -24,7 +25,6 @@ export async function alterBooking(req: AuthenticatedRequest, res: Response) {
     const  roomId  = Number(req.body.roomId );
 
     const alterbooking = await bookingsService.alterBooking(roomId, userId);
-    console.log(alterbooking)
     res.status(httpStatus.OK).send({bookingId: alterbooking.id });
 }
 
