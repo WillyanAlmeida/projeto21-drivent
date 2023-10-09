@@ -167,7 +167,7 @@ describe('Post /bookings/:bookingId', () => {
             expect(response.status).toBe(httpStatus.UNAUTHORIZED);
         });
         describe('when token is valid', () => {
-            it('should respond with status 400 when  for given user', async () => {
+            it('should respond with status 404 when  for given user', async () => {
                 const token = await generateValidToken();
 
                 const response = await server.get('/booking').set('Authorization', `Bearer ${token}`);
