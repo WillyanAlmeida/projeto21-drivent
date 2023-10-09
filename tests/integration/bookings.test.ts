@@ -71,6 +71,18 @@ describe('Post /bookings', () => {
 
         expect(response.status).toBe(httpStatus.FORBIDDEN);
     });
+    it("should respond with status 403 when user does not have a ticket", async () => {
+        const user = await createUser();
+        const token = await generateValidToken(user);
+        await createEnrollmentWithAddress(user);
+
+        const { status } = await server
+            .post('/booking')
+            .send({ roomId: 1 })
+            .set('Authorization', `Bearer ${token}`);
+
+        expect(status).toBe(httpStatus.FORBIDDEN);
+    });
 
     it('should respond with status 200 and bookingId', async () => {
         const user = await createUser();
