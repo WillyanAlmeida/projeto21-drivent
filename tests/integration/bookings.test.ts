@@ -140,10 +140,7 @@ describe('Post /bookings/:bookingId', () => {
             const randomRoom = await createRoomWithHotelId(hotel.id);
             const booking = await createBooking(user.id, randomRoom.id);
             const body = { roomId: room.id };
-            console.log(body)
-            console.log(user.id)
             const response = await server.put(`/booking/${booking.id}`).set('Authorization', `Bearer ${token}`).send({ roomId: room.id });
-            console.log(response.body)
             expect(response.status).toBe(httpStatus.OK);
             expect(response.body).toEqual(
                 expect.objectContaining({
